@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ClickUp Mini | Task Management</title>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      overflow-x: hidden;
+    }
+
+    /* Layout */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: white;
+      border-right: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .sidebar-header {
+      padding: 1.5rem 1rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 1rem;
+    }
+
+    .nav-section {
+      margin-bottom: 2rem;
+    }
+
+    .nav-section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      color: #4b5563;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-item i {
+      width: 1.25rem;
+      font-size: 1rem;
+    }
+
+    .nav-item.active, .nav-item:hover {
+      background: #f3f4f6;
+      color: #3b82f6;
+    }
+
+    .user-info {
+      padding: 1rem;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: #3b82f6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .top-bar {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 0.5rem;
+      background: #f3f4f6;
+      padding: 0.25rem;
+      border-radius: 0.5rem;
+    }
+
+    .view-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .view-btn.active {
+      background: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .new-task-btn {
+      background: #3b82f6;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Board View */
+    .board-view {
+      flex: 1;
+      overflow-x: auto;
+      padding: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .column {
+      min-width: 300px;
+      background: #f9fafb;
+      border-radius: 0.75rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .column-header {
+      padding: 0.75rem;
+      font-weight: 600;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 1rem;
+    }
+
+    .task-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+      padding: 0 0.25rem;
+    }
+
+    .task-card {
+      background: white;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    .task-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .task-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+    }
+
+    .priority-badge {
+      font-size: 0.7rem;
+      padding: 0.125rem 0.375rem;
+      border-radius: 1rem;
+      font-weight: 500;
+    }
+    .priority-high { background: #fee2e2; color: #b91c1c; }
+    .priority-medium { background: #fff3cd; color: #b45309; }
+    .priority-low { background: #e0f2fe; color: #0c4a6e; }
+
+    /* List View */
+    .list-view {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+
+    .list-table {
+      background: white;
+      border-radius: 0.75rem;
+      border: 1px solid #e5e7eb;
+      width: 100%;
+    }
+
+    .list-table th, .list-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .list-table th {
+      background: #f9fafb;
+      font-weight: 600;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 600px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      font-family: inherit;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #1f2937;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      z-index: 1100;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+  // ---------- Data ----------
+  let users = [];
+  let tasks = [];
+  let currentUser = null;
+  let currentView = 'board'; // 'board' or 'list'
+  let selectedTask = null;
+
+  // Helper functions
+  function saveData() {
+    localStorage.setItem('clickup_mini_users', JSON.stringify(users));
+    localStorage.setItem('clickup_mini_tasks', JSON.stringify(tasks));
+  }
+
+  function loadData() {
+    const storedUsers = localStorage.getItem('clickup_mini_users');
+    const storedTasks = localStorage.getItem('clickup_mini_tasks');
+    users = storedUsers ? JSON.parse(storedUsers) : [];
+    tasks = storedTasks ? JSON.parse(storedTasks) : [];
+
+    if (users.length === 0) {
+      const managerId = crypto.randomUUID();
+      const employeeId = crypto.randomUUID();
+      users.push(
+        { id: managerId, name: 'Manager', email: 'manager@demo.com', password: '123', role: 'manager' },
+        { id: employeeId, name: 'Alice Chen', email: 'alice@demo.com', password: '123', role: 'employee' }
+      );
+      tasks.push({
+        id: crypto.randomUUID(),
+        title: 'Design new dashboard',
+        description: 'Create wireframes and get feedback',
+        status: 'todo',
+        assigneeId: employeeId,
+        due: new Date(Date.now() + 7*86400000).toISOString().split('T')[0],
+        priority: 'high',
+        progress: 30
+      });
+      tasks.push({
+        id: crypto.randomUUID(),
+        title: 'Write documentation',
+        description: 'Update user guide',
+        status: 'inprogress',
+        assigneeId: employeeId,
+        due: new Date(Date.now() + 3*86400000).toISOString().split('T')[0],
+        priority: 'medium',
+        progress: 0
+      });
+      saveData();
+    }
+    // ensure all tasks have status and progress
+    tasks.forEach(t => {
+      if (!t.status) t.status = 'todo';
+      if (t.progress === undefined) t.progress = 0;
+      if (!t.priority) t.priority = 'medium';
+      if (!t.description) t.description = '';
+    });
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('globalToast');
+    toast.querySelector('span').innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+
+  // Status options
+  const statusLabels = {
+    todo: 'To Do',
+    inprogress: 'In Progress',
+    done: 'Done'
+  };
+
+  // Main render
+  function renderApp() {
+    const app = document.getElementById('app');
+    if (!currentUser) {
+      renderLogin();
+      return;
+    }
+    app.innerHTML = `
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2><i class="fas fa-tasks"></i> ClickUp Mini</h2>
+        </div>
+        <div class="sidebar-nav">
+          <div class="nav-section">
+            <div class="nav-section-title">Workspace</div>
+            <div class="nav-item active" data-view="board"><i class="fas fa-columns"></i> Board</div>
+            <div class="nav-item" data-view="list"><i class="fas fa-list"></i> List</div>
+          </div>
+        </div>
+        <div class="user-info">
+          <div class="user-avatar">${currentUser.name.charAt(0)}</div>
+          <div>
+            <div style="font-weight:500">${currentUser.name}</div>
+            <div style="font-size:0.75rem; color:#6b7280">${currentUser.role}</div>
+          </div>
+          <button id="logoutBtn" style="margin-left:auto; background:none; border:none; cursor:pointer;"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </div>
+      <div class="main">
+        <div class="top-bar">
+          <div class="view-toggle">
+            <button class="view-btn ${currentView === 'board' ? 'active' : ''}" data-view="board"><i class="fas fa-columns"></i> Board</button>
+            <button class="view-btn ${currentView === 'list' ? 'active' : ''}" data-view="list"><i class="fas fa-list"></i> List</button>
+          </div>
+          ${currentUser.role === 'manager' ? `<button id="newTaskBtn" class="new-task-btn"><i class="fas fa-plus"></i> New Task</button>` : ''}
+        </div>
+        <div id="mainContent"></div>
+      </div>
+    `;
+
+    document.querySelectorAll('.nav-item, .view-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const view = btn.getAttribute('data-view');
+        if (view) {
+          currentView = view;
+          renderApp();
+        }
+      });
+    });
+    if (currentUser.role === 'manager') {
+      document.getElementById('newTaskBtn')?.addEventListener('click', () => openTaskModal());
+    }
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+
+    renderContent();
+  }
+
+  function renderContent() {
+    const container = document.getElementById('mainContent');
+    if (currentView === 'board') {
+      renderBoard(container);
+    } else {
+      renderList(container);
+    }
+  }
+
+  function renderBoard(container) {
+    const statuses = ['todo', 'inprogress', 'done'];
+    container.innerHTML = `
+      <div class="board-view">
+        ${statuses.map(status => `
+          <div class="column">
+            <div class="column-header">${statusLabels[status]}</div>
+            <div class="task-list" data-status="${status}"></div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    statuses.forEach(status => {
+      const column = document.querySelector(`.task-list[data-status="${status}"]`);
+      const columnTasks = tasks.filter(t => t.status === status && (currentUser.role === 'manager' || t.assigneeId === currentUser.id));
+      columnTasks.forEach(task => {
+        column.appendChild(createTaskCard(task));
+      });
+    });
+  }
+
+  function createTaskCard(task) {
+    const card = document.createElement('div');
+    card.className = 'task-card';
+    card.dataset.id = task.id;
+    const assignee = users.find(u => u.id === task.assigneeId);
+    const priorityClass = task.priority === 'high' ? 'priority-high' : (task.priority === 'medium' ? 'priority-medium' : 'priority-low');
+    card.innerHTML = `
+      <div class="task-title">${escapeHtml(task.title)}</div>
+      <div class="task-meta">
+        <span><i class="fas fa-user"></i> ${assignee ? assignee.name : 'Unassigned'}</span>
+        <span><i class="fas fa-calendar-alt"></i> ${task.due}</span>
+      </div>
+      <div class="task-meta">
+        <span class="priority-badge ${priorityClass}">${task.priority}</span>
+        <span><i class="fas fa-chart-simple"></i> ${task.progress}%</span>
+      </div>
+    `;
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openTaskModal(task.id);
+    });
+    return card;
+  }
+
+  function renderList(container) {
+    let filteredTasks = tasks;
+    if (currentUser.role === 'employee') {
+      filteredTasks = tasks.filter(t => t.assigneeId === currentUser.id);
+    }
+    container.innerHTML = `
+      <div class="list-view">
+        <table class="list-table">
+          <thead>
+            <tr><th>Title</th><th>Status</th><th>Assignee</th><th>Due</th><th>Priority</th><th>Progress</th><th></th> </tr>
+          </thead>
+          <tbody>
+            ${filteredTasks.map(task => {
+              const assignee = users.find(u => u.id === task.assigneeId);
+              const priorityClass = task.priority === 'high' ? 'priority-high' : (task.priority === 'medium' ? 'priority-medium' : 'priority-low');
+              return `
+                <tr data-id="${task.id}" style="cursor:pointer">
+                   <td>${escapeHtml(task.title)}</td>
+                   <td>${statusLabels[task.status]}</td>
+                   <td>${assignee ? assignee.name : 'Unassigned'}</td>
+                   <td>${task.due}</td>
+                   <td><span class="priority-badge ${priorityClass}">${task.priority}</span></td>
+                   <td>${task.progress}%</td>
+                   <td><button class="edit-task-btn" data-id="${task.id}"><i class="fas fa-edit"></i></button></td>
+                 </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    document.querySelectorAll('.list-table tbody tr').forEach(row => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.edit-task-btn')) {
+          const id = e.target.closest('.edit-task-btn').dataset.id;
+          openTaskModal(id);
+        } else {
+          openTaskModal(row.dataset.id);
+        }
+      });
+    });
+  }
+
+  // Task Modal
+  function openTaskModal(taskId = null) {
+    selectedTask = taskId ? tasks.find(t => t.id === taskId) : null;
+    const modal = document.getElementById('taskModal');
+    const isNew = !selectedTask;
+    if (isNew && currentUser.role !== 'manager') {
+      showToast('Only managers can create tasks');
+      return;
+    }
+    const assigneeOptions = users.filter(u => u.role === 'employee').map(u => `<option value="${u.id}" ${selectedTask?.assigneeId === u.id ? 'selected' : ''}>${u.name}</option>`).join('');
+    const statusOptions = Object.entries(statusLabels).map(([val, label]) => `<option value="${val}" ${selectedTask?.status === val ? 'selected' : ''}>${label}</option>`).join('');
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>${isNew ? 'Create Task' : 'Edit Task'}</h3>
+          <button id="closeModalBtn" style="background:none; border:none; font-size:1.25rem;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="form-group">
+          <label>Title *</label>
+          <input type="text" id="taskTitle" value="${selectedTask ? escapeHtml(selectedTask.title) : ''}">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="taskDesc" rows="3">${selectedTask ? escapeHtml(selectedTask.description) : ''}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="taskStatus">${statusOptions}</select>
+        </div>
+        <div class="form-group">
+          <label>Assignee</label>
+          <select id="taskAssignee">${assigneeOptions}</select>
+        </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" id="taskDue" value="${selectedTask ? selectedTask.due : ''}">
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="taskPriority">
+            <option value="low" ${selectedTask?.priority === 'low' ? 'selected' : ''}>Low</option>
+            <option value="medium" ${selectedTask?.priority === 'medium' ? 'selected' : ''}>Medium</option>
+            <option value="high" ${selectedTask?.priority === 'high' ? 'selected' : ''}>High</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Progress (%)</label>
+          <input type="number" id="taskProgress" min="0" max="100" value="${selectedTask ? selectedTask.progress : 0}">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem;">
+          <button id="cancelModalBtn" class="secondary">Cancel</button>
+          <button id="saveTaskBtn" class="primary">Save</button>
+        </div>
+      </div>
+    `;
+    modal.style.display = 'flex';
+    document.getElementById('closeModalBtn').onclick = () => modal.style.display = 'none';
+    document.getElementById('cancelModalBtn').onclick = () => modal.style.display = 'none';
+    document.getElementById('saveTaskBtn').onclick = () => {
+      const title = document.getElementById('taskTitle').value.trim();
+      if (!title) { showToast('Title is required'); return; }
+      const description = document.getElementById('taskDesc').value;
+      const status = document.getElementById('taskStatus').value;
+      const assigneeId = document.getElementById('taskAssignee').value;
+      const due = document.getElementById('taskDue').value;
+      const priority = document.getElementById('taskPriority').value;
+      let progress = parseInt(document.getElementById('taskProgress').value);
+      if (isNaN(progress)) progress = 0;
+      progress = Math.min(100, Math.max(0, progress));
+      // Auto progress 100% if status is done
+      if (status === 'done') progress = 100;
+
+      if (selectedTask) {
+        // update existing
+        selectedTask.title = title;
+        selectedTask.description = description;
+        selectedTask.status = status;
+        selectedTask.assigneeId = assigneeId;
+        selectedTask.due = due;
+        selectedTask.priority = priority;
+        selectedTask.progress = progress;
+      } else {
+        // create new
+        const newTask = {
+          id: crypto.randomUUID(),
+          title,
+          description,
+          status,
+          assigneeId,
+          due,
+          priority,
+          progress
+        };
+        tasks.push(newTask);
+      }
+      saveData();
+      modal.style.display = 'none';
+      renderApp();
+      showToast(isNew ? 'Task created' : 'Task updated');
+    };
+  }
+
+  // Login / Signup
+  function renderLogin() {
+    document.getElementById('app').innerHTML = `
+      <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div style="background:white; padding:2rem; border-radius:1rem; width:90%; max-width:400px;">
+          <h2 style="text-align:center;">🔐 ClickUp Mini</h2>
+          <input type="email" id="loginEmail" placeholder="Email" style="width:100%; margin:1rem 0; padding:0.75rem;">
+          <input type="password" id="loginPassword" placeholder="Password" style="width:100%; margin-bottom:1rem; padding:0.75rem;">
+          <div id="loginError" style="color:red; margin-bottom:1rem;"></div>
+          <button id="loginBtn" style="width:100%; padding:0.75rem;">Login</button>
+          <hr>
+          <button id="showSignupBtn" style="width:100%; background:#e2e8f0;">Signup</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('loginBtn').onclick = () => {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const user = users.find(u => u.email === email && u.password === password);
+      if (!user) { document.getElementById('loginError').innerText = 'Invalid credentials'; return; }
+      currentUser = user;
+      renderApp();
+    };
+    document.getElementById('showSignupBtn').onclick = renderSignup;
+  }
+
+  function renderSignup() {
+    document.getElementById('app').innerHTML = `
+      <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div style="background:white; padding:2rem; border-radius:1rem; width:90%; max-width:400px;">
+          <h2 style="text-align:center;">📝 Create Account</h2>
+          <input id="signupName" placeholder="Full Name" style="width:100%; margin:0.5rem 0; padding:0.75rem;">
+          <input id="signupEmail" type="email" placeholder="Email" style="width:100%; margin:0.5rem 0; padding:0.75rem;">
+          <input id="signupPassword" type="password" placeholder="Password" style="width:100%; margin:0.5rem 0; padding:0.75rem;">
+          <select id="signupRole" style="width:100%; margin:0.5rem 0; padding:0.75rem;">
+            <option value="employee">Employee</option>
+            <option value="manager">Manager</option>
+          </select>
+          <div id="signupError" style="color:red;"></div>
+          <button id="signupBtn" style="width:100%; margin-top:1rem; padding:0.75rem;">Sign Up</button>
+          <hr>
+          <button id="backToLogin" style="width:100%; background:#e2e8f0;">Back to Login</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('signupBtn').onclick = () => {
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const role = document.getElementById('signupRole').value;
+      if (!name || !email || !password) { document.getElementById('signupError').innerText = 'All fields required'; return; }
+      if (users.find(u => u.email === email)) { document.getElementById('signupError').innerText = 'Email exists'; return; }
+      const newUser = { id: crypto.randomUUID(), name, email, password, role };
+      users.push(newUser);
+      saveData();
+      renderLogin();
+    };
+    document.getElementById('backToLogin').onclick = renderLogin;
+  }
+
+  function logout() {
+    currentUser = null;
+    renderLogin();
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  // Initial load
+  loadData();
+  // Add global toast element
+  const toastDiv = document.createElement('div');
+  toastDiv.id = 'globalToast';
+  toastDiv.className = 'toast';
+  toastDiv.innerHTML = '<i class="fas fa-info-circle"></i> <span></span>';
+  document.body.appendChild(toastDiv);
+  // Add modal element
+  const modalDiv = document.createElement('div');
+  modalDiv.id = 'taskModal';
+  modalDiv.className = 'modal';
+  document.body.appendChild(modalDiv);
+  renderLogin();
+</script>
+</body>
+</html>
